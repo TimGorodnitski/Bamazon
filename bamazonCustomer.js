@@ -11,7 +11,7 @@ var connection = mysql.createConnection({
     user: "root",
 
     // Your password
-    password: "",
+    password: "Pa55werd",
     database: "bamazon"
 });
 
@@ -43,22 +43,34 @@ function startBuying() {
             for (var i = 0; i < results.length; i++) {
                 choiceArray.push("ID " + results[i].item_id + " " + results[i].product_name + ", $" + results[i].price + ", " + results[i].stock_quantity + " units available");
             }
-            console.log(choiceArray); 
+            console.log(choiceArray);
+
+            inquirer
+                .prompt([{
+                    name: "itemid",
+                    type: "input",
+                    message: "Input the ID of the item you wish to buy"
+                }, {
+                    message: "How many would you like?",
+                    name: "purchaseQuantity",
+                    type: "input"
+                }]).then(function (answers) {
+                    if (parseInt(answers.purchaseQuantity) <= parseInt(results[answers.itemid - 1].stock_quantity)) {
+                        let totalSpent = (parseInt(answers.purchaseQuantity) * parseFloat(results[answers.itemid - 1].price));
+                        let newQuantity = (results[answers.itemid - 1].stock_quantity - answers.purchaseQuantity);
+                        console.log('UPDATE products SET stock_quantity = "' + newQuantity + '" WHERE item_id = ' + parseInt(answers.itemid));
+                        connection.query('UPDATE products SET stock_quantity = "' + newQuantity + '" WHERE item_id = ' + parseInt(answers.itemid));
+
+                        console.log("Your order for " + answers.purchaseQuantity + " " + results[answers.itemid - 1].product_name + " has gone through, your total cost is $" + totalSpent.toFixed(2));
+                        startBuying();
+                    } else {
+                        console.log("Sorry, you wanted " + answers.purchaseQuantity + " " + results[answers.itemid - 1].product_name + ", but we only have " + results[answers.itemid - 1].stock_quantity + " left in stock.");
+                        list();
+                    }
+                })
         };
 
         list();
 
-        inquirer
-            .prompt([{
-                name: "itemid",
-                type: "input",
-                message: "Input the ID of the item you wish to buy"
-            },{
-                message: "How many would you like?",
-                name: "purchaseQuantity",
-                type: "input"
-            }]).then(function(answers){
-                
-            })
     })
 };
