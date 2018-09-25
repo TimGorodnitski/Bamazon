@@ -25,4 +25,6 @@ VALUES
 ("Bean Bag Chair", "furniture", 98.99, 25),
 ("Doritos Nacho Cheese 15.5oz", "groceries", 3.98, 700);
 
-SELECT * FROM products
+SELECT * FROM products;
+
+UPDATE products SET stock_quantity = "45" WHERE item_id = 7;

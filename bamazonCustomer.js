@@ -11,7 +11,7 @@ var connection = mysql.createConnection({
     user: "root",
 
     // Your password
-    password: "Pa55werd",
+    password: "",
     database: "bamazon"
 });
 
@@ -35,13 +35,13 @@ function welcome() {
 };
 
 function startBuying() {
-    connection.query("SELECT * FROM products", function (err, results) {
+    connection.query("SELECT * FROM products", function (err, products) {
         if (err) throw err;
 
         function list() {
             var choiceArray = [];
-            for (var i = 0; i < results.length; i++) {
-                choiceArray.push("ID " + results[i].item_id + " " + results[i].product_name + ", $" + results[i].price + ", " + results[i].stock_quantity + " units available");
+            for (var i = 0; i < products.length; i++) {
+                choiceArray.push("ID " + products[i].item_id + " " + products[i].product_name + ", $" + products[i].price + ", " + products[i].stock_quantity + " units available");
             }
             console.log(choiceArray);
 
@@ -55,16 +55,15 @@ function startBuying() {
                     name: "purchaseQuantity",
                     type: "input"
                 }]).then(function (answers) {
-                    if (parseInt(answers.purchaseQuantity) <= parseInt(results[answers.itemid - 1].stock_quantity)) {
-                        let totalSpent = (parseInt(answers.purchaseQuantity) * parseFloat(results[answers.itemid - 1].price));
-                        let newQuantity = (results[answers.itemid - 1].stock_quantity - answers.purchaseQuantity);
-                        console.log('UPDATE products SET stock_quantity = "' + newQuantity + '" WHERE item_id = ' + parseInt(answers.itemid));
+                    if (parseInt(answers.purchaseQuantity) <= parseInt(products[answers.itemid - 1].stock_quantity)) {
+                        let totalSpent = (parseInt(answers.purchaseQuantity) * parseFloat(products[answers.itemid - 1].price));
+                        let newQuantity = (products[answers.itemid - 1].stock_quantity - answers.purchaseQuantity);
                         connection.query('UPDATE products SET stock_quantity = "' + newQuantity + '" WHERE item_id = ' + parseInt(answers.itemid));
 
-                        console.log("Your order for " + answers.purchaseQuantity + " " + results[answers.itemid - 1].product_name + " has gone through, your total cost is $" + totalSpent.toFixed(2));
+                        console.log("Your order for " + answers.purchaseQuantity + " " + products[answers.itemid - 1].product_name + " has gone through, your total cost is $" + totalSpent.toFixed(2));
                         startBuying();
                     } else {
-                        console.log("Sorry, you wanted " + answers.purchaseQuantity + " " + results[answers.itemid - 1].product_name + ", but we only have " + results[answers.itemid - 1].stock_quantity + " left in stock.");
+                        console.log("Sorry, you wanted " + answers.purchaseQuantity + " " + products[answers.itemid - 1].product_name + ", but we only have " + products[answers.itemid - 1].stock_quantity + " left in stock.");
                         list();
                     }
                 })
